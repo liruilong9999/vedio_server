@@ -1,22 +1,6 @@
-/**********
-This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 3 of the License, or (at your
-option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
-
-This library is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
-more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this library; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-**********/
 // Copyright (c) 1996-2017, Live Networks, Inc.  All rights reserved
-// A subclass of "RTSPServer" that creates "ServerMediaSession"s on demand,
-// based on whether or not the specified stream name exists as a file
-// Implementation
+// "RTSPServer" 的子类，根据指定的流名称是否作为文件存在，按需创建 "ServerMediaSession"
+// 实现部分
 
 #include "DynamicRTSPServer.hh"
 #include <liveMedia.hh>
@@ -25,11 +9,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 DynamicRTSPServer *
 DynamicRTSPServer::createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
 {
-    int ourSocket = setUpOurSocket(env, ourPort);
+    int ourSocket = setUpOurSocket(env, ourPort); // 设置我们的套接字
     if (ourSocket == -1)
         return NULL;
 
-    return new DynamicRTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds);
+    return new DynamicRTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds); // 创建新的动态 RTSP 服务器
 }
 
 DynamicRTSPServer::DynamicRTSPServer(UsageEnvironment & env, int ourSocket, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
@@ -43,24 +27,24 @@ DynamicRTSPServer::~DynamicRTSPServer()
 
 static ServerMediaSession * createNewSMS(UsageEnvironment & env,
                                          char const *       fileName,
-                                         FILE *             fid); // forward
+                                         FILE *             fid); // 向前声明
 
-ServerMediaSession * DynamicRTSPServer ::lookupServerMediaSession(char const * streamName, Boolean isFirstLookupInSession)
+ServerMediaSession * DynamicRTSPServer::lookupServerMediaSession(char const * streamName, Boolean isFirstLookupInSession)
 {
-    // First, check whether the specified "streamName" exists as a local file:
+    // 首先，检查指定的 "streamName" 是否作为本地文件存在：
     FILE *  fid        = fopen(streamName, "rb");
     Boolean fileExists = fid != NULL;
 
-    // Next, check whether we already have a "ServerMediaSession" for this file:
+    // 接下来，检查是否已经为该文件存在一个 "ServerMediaSession"：
     ServerMediaSession * sms       = RTSPServer::lookupServerMediaSession(streamName);
     Boolean              smsExists = sms != NULL;
 
-    // Handle the four possibilities for "fileExists" and "smsExists":
+    // 处理 "fileExists" 和 "smsExists" 四种可能的情况：
     if (!fileExists)
     {
         if (smsExists)
         {
-            // "sms" was created for a file that no longer exists. Remove it:
+            // "sms" 是为一个不再存在的文件创建的，移除它：
             removeServerMediaSession(sms);
             sms = NULL;
         }
@@ -71,24 +55,23 @@ ServerMediaSession * DynamicRTSPServer ::lookupServerMediaSession(char const * s
     {
         if (smsExists && isFirstLookupInSession)
         {
-            // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
-            // file has changed in some way:
+            // 如果文件发生了变化，移除现有的 "ServerMediaSession" 并创建一个新的：
             removeServerMediaSession(sms);
             sms = NULL;
         }
 
         if (sms == NULL)
         {
-            sms = createNewSMS(envir(), streamName, fid);
-            addServerMediaSession(sms);
+            sms = createNewSMS(envir(), streamName, fid); // 创建新的 ServerMediaSession
+            addServerMediaSession(sms);                   // 添加到服务器的媒体会话中
         }
 
-        fclose(fid);
+        fclose(fid); // 关闭文件
         return sms;
     }
 }
 
-// Special code for handling Matroska files:
+// 处理 Matroska 文件的特殊代码：
 struct MatroskaDemuxCreationState
 {
     MatroskaFileServerDemux * demux;
@@ -100,9 +83,9 @@ static void onMatroskaDemuxCreation(MatroskaFileServerDemux * newDemux, void * c
     creationState->demux                       = newDemux;
     creationState->watchVariable               = 1;
 }
-// END Special code for handling Matroska files:
+// 结束处理 Matroska 文件的特殊代码：
 
-// Special code for handling Ogg files:
+// 处理 Ogg 文件的特殊代码：
 struct OggDemuxCreationState
 {
     OggFileServerDemux * demux;
@@ -114,7 +97,7 @@ static void onOggDemuxCreation(OggFileServerDemux * newDemux, void * clientData)
     creationState->demux                  = newDemux;
     creationState->watchVariable          = 1;
 }
-// END Special code for handling Ogg files:
+// 结束处理 Ogg 文件的特殊代码：
 
 #define NEW_SMS(description)                                                   \
     do                                                                         \
@@ -128,7 +111,7 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
                                          char const *       fileName,
                                          FILE * /*fid*/)
 {
-    // Use the file name extension to determine the type of "ServerMediaSession":
+    // 使用文件名的扩展名来确定 "ServerMediaSession" 的类型：
     char const * extension = strrchr(fileName, '.');
     if (extension == NULL)
         return NULL;
@@ -137,58 +120,58 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     Boolean const        reuseSource = False;
     if (strcmp(extension, ".aac") == 0)
     {
-        // Assumed to be an AAC Audio (ADTS format) file:
+        // 假设为 AAC 音频（ADTS 格式）文件：
         NEW_SMS("AAC Audio");
         sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".amr") == 0)
     {
-        // Assumed to be an AMR Audio file:
+        // 假设为 AMR 音频文件：
         NEW_SMS("AMR Audio");
         sms->addSubsession(AMRAudioFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".ac3") == 0)
     {
-        // Assumed to be an AC-3 Audio file:
+        // 假设为 AC-3 音频文件：
         NEW_SMS("AC-3 Audio");
         sms->addSubsession(AC3AudioFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".m4e") == 0)
     {
-        // Assumed to be a MPEG-4 Video Elementary Stream file:
+        // 假设为 MPEG-4 视频元素流文件：
         NEW_SMS("MPEG-4 Video");
         sms->addSubsession(MPEG4VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".264") == 0)
     {
-        // Assumed to be a H.264 Video Elementary Stream file:
+        // 假设为 H.264 视频元素流文件：
         NEW_SMS("H.264 Video");
-        OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.264 frames
+        OutPacketBuffer::maxSize = 100000; // 允许较大的 H.264 帧
         sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".265") == 0)
     {
-        // Assumed to be a H.265 Video Elementary Stream file:
+        // 假设为 H.265 视频元素流文件：
         NEW_SMS("H.265 Video");
-        OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.265 frames
+        OutPacketBuffer::maxSize = 100000; // 允许较大的 H.265 帧
         sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".mp3") == 0)
     {
-        // Assumed to be a MPEG-1 or 2 Audio file:
+        // 假设为 MPEG-1 或 MPEG-2 音频文件：
         NEW_SMS("MPEG-1 or 2 Audio");
-        // To stream using 'ADUs' rather than raw MP3 frames, uncomment the following:
+        // 要使用 'ADUs' 流式传输而不是原始的 MP3 帧，请取消以下注释：
         // #define STREAM_USING_ADUS 1
-        //  To also reorder ADUs before streaming, uncomment the following:
+        //  要在流式传输之前重新排序 ADU，请取消以下注释：
         // #define INTERLEAVE_ADUS 1
-        //  (For more information about ADUs and interleaving,
-        //   see <http://www.live555.com/rtp-mp3/>)
+        //  （有关 ADUs 和重排的更多信息，
+        //   请参见 <http://www.live555.com/rtp-mp3/>）
         Boolean        useADUs      = False;
         Interleaving * interleaving = NULL;
 #ifdef STREAM_USING_ADUS
         useADUs = True;
 #ifdef INTERLEAVE_ADUS
-        unsigned char  interleaveCycle[]   = {0, 2, 1, 3}; // or choose your own...
+        unsigned char  interleaveCycle[]   = {0, 2, 1, 3}; // 或选择您自己的...
         unsigned const interleaveCycleSize = (sizeof interleaveCycle) / (sizeof(unsigned char));
         interleaving                       = new Interleaving(interleaveCycleSize, interleaveCycle);
 #endif
@@ -197,7 +180,7 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".mpg") == 0)
     {
-        // Assumed to be a MPEG-1 or 2 Program Stream (audio+video) file:
+        // 假设为 MPEG-1 或 MPEG-2 程序流（音频+视频）文件：
         NEW_SMS("MPEG-1 or 2 Program Stream");
         MPEG1or2FileServerDemux * demux = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
         sms->addSubsession(demux->newVideoServerMediaSubsession());
@@ -205,7 +188,7 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".vob") == 0)
     {
-        // Assumed to be a VOB (MPEG-2 Program Stream, with AC-3 audio) file:
+        // 假设为 VOB（MPEG-2 程序流，包含 AC-3 音频）文件：
         NEW_SMS("VOB (MPEG-2 video with AC-3 audio)");
         MPEG1or2FileServerDemux * demux = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
         sms->addSubsession(demux->newVideoServerMediaSubsession());
@@ -213,9 +196,9 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".ts") == 0)
     {
-        // Assumed to be a MPEG Transport Stream file:
-        // Use an index file name that's the same as the TS file name, except with ".tsx":
-        unsigned indexFileNameLen = strlen(fileName) + 2; // allow for trailing "x\0"
+        // 假设为 MPEG 传输流文件：
+        // 使用与 TS 文件名相同的索引文件名，只是扩展名为 ".tsx"：
+        unsigned indexFileNameLen = strlen(fileName) + 2; // 留出尾部 "x\0"
         char *   indexFileName    = new char[indexFileNameLen];
         sprintf(indexFileName, "%sx", fileName);
         NEW_SMS("MPEG Transport Stream");
@@ -224,17 +207,17 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".wav") == 0)
     {
-        // Assumed to be a WAV Audio file:
+        // 假设为 WAV 音频文件：
         NEW_SMS("WAV Audio Stream");
-        // To convert 16-bit PCM data to 8-bit u-law, prior to streaming,
-        // change the following to True:
+        // 在流式传输之前，将 16 位 PCM 数据转换为 8 位 u-law
+        // 请将以下代码修改为 True：
         Boolean convertToULaw = False;
         sms->addSubsession(WAVAudioFileServerMediaSubsession::createNew(env, fileName, reuseSource, convertToULaw));
     }
     else if (strcmp(extension, ".dv") == 0)
     {
-        // Assumed to be a DV Video file
-        // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
+        // 假设为 DV 视频文件
+        // 首先，确保 RTPSinks 的缓冲区足够大，以处理 DV 帧的巨大尺寸（最大可达 288000）。
         OutPacketBuffer::maxSize = 300000;
 
         NEW_SMS("DV Video");
@@ -242,12 +225,12 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".mkv") == 0 || strcmp(extension, ".webm") == 0)
     {
-        // Assumed to be a Matroska file (note that WebM ('.webm') files are also Matroska files)
-        OutPacketBuffer::maxSize = 100000; // allow for some possibly large VP8 or VP9 frames
+        // 假设为 Matroska 文件（注意 WebM（`.webm`）文件也是 Matroska 文件）
+        OutPacketBuffer::maxSize = 100000; // 允许较大的 VP8 或 VP9 帧
         NEW_SMS("Matroska video+audio+(optional)subtitles");
 
-        // Create a Matroska file server demultiplexor for the specified file.
-        // (We enter the event loop to wait for this to complete.)
+        // 为指定的文件创建 Matroska 文件服务器解复用器。
+        // （我们进入事件循环以等待此操作完成。）
         MatroskaDemuxCreationState creationState;
         creationState.watchVariable = 0;
         MatroskaFileServerDemux::createNew(env, fileName, onMatroskaDemuxCreation, &creationState);
@@ -261,11 +244,11 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     }
     else if (strcmp(extension, ".ogg") == 0 || strcmp(extension, ".ogv") == 0 || strcmp(extension, ".opus") == 0)
     {
-        // Assumed to be an Ogg file
+        // 假设为 Ogg 文件
         NEW_SMS("Ogg video and/or audio");
 
-        // Create a Ogg file server demultiplexor for the specified file.
-        // (We enter the event loop to wait for this to complete.)
+        // 为指定的文件创建 Ogg 文件服务器解复用器。
+        // （我们进入事件循环以等待此操作完成。）
         OggDemuxCreationState creationState;
         creationState.watchVariable = 0;
         OggFileServerDemux::createNew(env, fileName, onOggDemuxCreation, &creationState);
