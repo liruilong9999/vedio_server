@@ -1,0 +1,7 @@
+﻿<root>
+    <pluginList>
+        <plugin name="插件a" path="plugina" isUsed="1" />
+        <plugin name="插件b" path="pluginb" isUsed="1" />
+        <plugin name="主界面插件" path="appskeletonplugin" isUsed="1" />
+    </pluginList>
+</root>

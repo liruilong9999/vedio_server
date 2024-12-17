@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Display String Example</title>
+    <script>
+        var context;
+        context = channel.objects.context;
+        function displayString(string) {
+            var element = document.getElementById('output');
+            element.textContent = string;
+        }
+    </script>
+</head>
+<body>
+    <div id="output"></div>
+
+    <!-- 调用 displayString() 函数 -->
+    <script>
+        var msg = 'Hello, World!';
+        displayString(msg);
+    </script>
+</body>
+</html>
