@@ -13,6 +13,7 @@ include_directories(../../lib/liveMedia/include)
 include_directories(../../lib/UsageEnvironment/include)
 
 set(OTHER_LIBRARY_LIST "Ws2_32")
+
 # 创建项目 
 CreateTarget(${ProjectName} "ExeCMD") 
  

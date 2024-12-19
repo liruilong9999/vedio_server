@@ -21,7 +21,7 @@ macro(CreateTarget ProjectName Type)
     set(RESOURCE_FILES "")     # Qt 资源文件（.qrc）
     
     # 递归查找指定类型的文件并存储到相应变量中
-    file(GLOB_RECURSE HEADER_FILES "${CURRENT_PATH}/*.h" "${CURRENT_PATH}/*.hpp")
+    file(GLOB_RECURSE HEADER_FILES "${CURRENT_PATH}/*.h" "${CURRENT_PATH}/*.hpp" "${CURRENT_PATH}/*.hh" )
     file(GLOB_RECURSE SOURCE_FILES "${CURRENT_PATH}/*.c" "${CURRENT_PATH}/*.cpp")
     file(GLOB_RECURSE FORM_FILES "${CURRENT_PATH}/*.ui")
     file(GLOB_RECURSE RESOURCE_FILES "${CURRENT_PATH}/*.qrc")
@@ -49,12 +49,14 @@ macro(CreateTarget ProjectName Type)
     include_directories(${ROOT_DIR}/src)              	# src 目录
 	include_directories(${ROOT_DIR}/src/core)      	   	# bin 目录下的 include
     include_directories(${ROOT_DIR}/src/lib)       		# src 下的 include
-    include_directories(${ROOT_DIR}/src/module)       	# src 下的 include
-    include_directories(${ROOT_DIR}/src/interface)           
+    include_directories(${ROOT_DIR}/src/module)       	# src 下的 module
+    include_directories(${ROOT_DIR}/src/interface)     
+    include_directories(${ROOT_DIR}/bin/include)             
 
     # 设置静态库文件搜索路径
 	link_directories(${CURRENT_PATH})                  # 当前目录
     link_directories(${ROOT_DIR}/lib)                  # 项目根目录下的 lib 目录
+    link_directories(${ROOT_DIR}/lib/ffmpeg)                  # 项目根目录下的 lib 目录
 	link_directories(${ROOT_DIR}/bin/lib)              # bin 目录下的 lib
     link_directories(${ROOT_DIR}/src)                  # src 目录
 
