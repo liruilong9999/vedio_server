@@ -272,27 +272,20 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
         {
             return sms;
         }
-        outFileName = fileNameList[0] + ".264";
+        outFileName            = fileNameList[0] + ".264";
+        QStringList outDirList = outFileName.split("/");
+        if (outDirList.size() != 2)
+        {
+            return sms;
+        }
+        outFileName = outDirList[0] + "/outdir/" + outDirList[1];
+
         // 先生成264
         QString commandQStr = QString("ffmpeg -i ./%1 -c:v copy -an -bsf h264_mp4toannexb -f h264 -y ./%2").arg(fileName).arg(outFileName);
 
-        // const char *commandStr = commandQStr.toUtf8().constData();
-        //// 执行命令
-        // int result = system(commandStr);
-        // if (result != 0)
-        //{
-        //     return sms;
-        // }
-        //   创建 QProcess 对象
         QProcess process;
-
-        // 启动命令并执行
         process.start(commandQStr);
-
-        // 等待进程完成
         process.waitForFinished(-1); // -1 表示等待直到命令执行完成
-
-        // 获取返回的退出代码
         int exitCode = process.exitCode();
         if (exitCode != 0)
         {
