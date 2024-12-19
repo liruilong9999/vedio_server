@@ -6,6 +6,10 @@
 #include <liveMedia.hh>
 #include <string.h>
 
+#include <QString>
+#include <QStringList>
+#include <QProcess>
+
 DynamicRTSPServer *
 DynamicRTSPServer::createNew(UsageEnvironment & env, Port ourPort, UserAuthenticationDatabase * authDatabase, unsigned reclamationTestSeconds)
 {
@@ -146,7 +150,7 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
     {
         // 假设为 H.264 视频元素流文件：
         NEW_SMS("H.264 Video");
-        OutPacketBuffer::maxSize = 100000; // 允许较大的 H.264 帧
+        OutPacketBuffer::maxSize = 1000000; // 允许较大的 H.264 帧
         sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
     }
     else if (strcmp(extension, ".265") == 0)
@@ -260,6 +264,45 @@ static ServerMediaSession * createNewSMS(UsageEnvironment & env,
             sms->addSubsession(smss);
         }
     }
+    else if (strcmp(extension, ".mp4") == 0)
+    {
+        QString     outFileName;
+        QStringList fileNameList = QString(fileName).split(".");
+        if (fileNameList.size() != 2)
+        {
+            return sms;
+        }
+        outFileName = fileNameList[0] + ".264";
+        // 先生成264
+        QString commandQStr = QString("ffmpeg -i ./%1 -c:v copy -an -bsf h264_mp4toannexb -f h264 -y ./%2").arg(fileName).arg(outFileName);
 
+        // const char *commandStr = commandQStr.toUtf8().constData();
+        //// 执行命令
+        // int result = system(commandStr);
+        // if (result != 0)
+        //{
+        //     return sms;
+        // }
+        //   创建 QProcess 对象
+        QProcess process;
+
+        // 启动命令并执行
+        process.start(commandQStr);
+
+        // 等待进程完成
+        process.waitForFinished(-1); // -1 表示等待直到命令执行完成
+
+        // 获取返回的退出代码
+        int exitCode = process.exitCode();
+        if (exitCode != 0)
+        {
+            return sms;
+        }
+
+        // 假设为 H.264 视频元素流文件：
+        NEW_SMS("mp4 Video");
+        OutPacketBuffer::maxSize = 1000000; // 允许较大的 H.264 帧
+        sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, outFileName.toStdString().c_str(), reuseSource));
+    }
     return sms;
 }
