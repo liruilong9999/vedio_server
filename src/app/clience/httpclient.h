@@ -31,7 +31,7 @@ public:
     void updateTreeWidget(QTreeWidget * treeWidget);
 
     void getFileList();
-    QUrl getVedioUrl(QString path);
+    QString getVedioUrl(QString path);
 
 signals:
     void parserFinished();

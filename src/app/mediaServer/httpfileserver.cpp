@@ -274,3 +274,18 @@ QJsonArray HttpFileServer::getFileListFromDir(const QString & dirPath)
 
     return jsonArray; // 返回目录及其子文件的 JSON 数组
 }
+
+ HttpThread::~HttpThread()
+{
+	 quit();
+	 wait();
+}
+
+void HttpThread::run()
+{
+	qDebug()<<"________________";
+    // 创建服务器实例
+    HttpFileServer server;
+    server.startServer(); // 启动服务器
+	exec();
+}

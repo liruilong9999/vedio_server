@@ -11,22 +11,36 @@ MediayPlayerWidget::MediayPlayerWidget(QWidget * parent)
     , ui(new Ui::MediayPlayerWidget)
 {
     ui->setupUi(this);
-
+    m_vlcInstance     = libvlc_new(0, nullptr);
+    m_vlc_mediaPlayer = libvlc_media_player_new(m_vlcInstance);
     // 初始化 HttpClient
     m_pHttpClient = new HttpClient(this);
+
+    m_videoWidget = ui->webView;
+    libvlc_media_player_set_hwnd(m_vlc_mediaPlayer, (void *)m_videoWidget->winId());
 
     // 连接 TreeWidget 的项点击事件
     connect(ui->treeWidget, &QTreeWidget::itemDoubleClicked, this, &MediayPlayerWidget::onItemDoubleClicked);
     connect(ui->refreshBtn, &QPushButton::clicked, this, &MediayPlayerWidget::onRefreshBtnClicked);
-    connect(ui->webView, &LWebView::loadProgress, this, &MediayPlayerWidget::onLoadProgress);
-    connect(ui->webView, &LWebView::titleChanged, this, &MediayPlayerWidget::onTitleChanged);
-    connect(ui->webView, &LWebView::urlChanged, this, &MediayPlayerWidget::onUrlChanged);
 
     connect(m_pHttpClient, &HttpClient::parserFinished, this, &MediayPlayerWidget::onParserFinished);
 
-    onLoadProgress(ui->webView->LoadProgress());
-
     onRefreshBtnClicked(); // 先刷新一次
+}
+
+void MediayPlayerWidget::play(const QString & url)
+{
+    if (media)
+    {
+        libvlc_media_release(media);
+    }
+
+    // 创建媒体对象
+    media = libvlc_media_new_location(m_vlcInstance, url.toStdString().c_str());
+    libvlc_media_player_set_media(m_vlc_mediaPlayer, media);
+
+    // 开始播放
+    libvlc_media_player_play(m_vlc_mediaPlayer);
 }
 
 MediayPlayerWidget::~MediayPlayerWidget()
@@ -51,25 +65,8 @@ void MediayPlayerWidget::onItemDoubleClicked(QTreeWidgetItem * item, int column)
 
     if (fileInfo.isDir == false)
     {
-        ui->webView->setUrl(m_pHttpClient->getVedioUrl(fileInfo.fullPath));
+         play(m_pHttpClient->getVedioUrl(fileInfo.fullPath));
     }
-}
-
-void MediayPlayerWidget::onLoadProgress(int progress)
-{
-    // 显示加载进度
-    progress = progress < 100 ? progress : 0;
-    ui->progressBar->setValue(progress);
-    ui->progressBar->setVisible(progress > 0);
-}
-
-void MediayPlayerWidget::onTitleChanged(const QString & title)
-{
-    // setWindowTitle(title);
-}
-
-void MediayPlayerWidget::onUrlChanged(const QUrl & url)
-{
 }
 
 void MediayPlayerWidget::onParserFinished()

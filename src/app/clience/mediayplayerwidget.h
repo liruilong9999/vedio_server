@@ -2,7 +2,10 @@
 #define MEDIAYPLAYERWIDGET_H
 
 #include <QWidget>
-#include <LWebView/LWebView.h>
+#include <vlc/vlc.h>
+#include <QTimer>
+#include <QProcess>
+#include <QSlider>
 
 #include "httpclient.h"
 
@@ -18,24 +21,28 @@ class MediayPlayerWidget : public QWidget
 
 public:
     MediayPlayerWidget(QWidget * parent = nullptr);
-    ~MediayPlayerWidget();
+	void play(const QString & url);
+	~MediayPlayerWidget();
 
     void updateTreeWidget();
-
-    // void refreshWeb(QString url);
 
 public slots:
     // 获取文件列表
     void onRefreshBtnClicked();
     void onItemDoubleClicked(QTreeWidgetItem * item, int column);
-    void onLoadProgress(int progress);
-    void onTitleChanged(const QString & title);
-    void onUrlChanged(const QUrl & url);
-	void onParserFinished();
+    void onParserFinished();
 
 private:
     Ui::MediayPlayerWidget * ui;
 
     HttpClient * m_pHttpClient{nullptr};
+    QWidget *    m_videoWidget{nullptr};    // 播放窗口
+
+    libvlc_media_player_t * m_vlc_mediaPlayer{nullptr}; // 播放控制
+
+    QTimer * m_timer{nullptr};
+    libvlc_instance_t * m_vlcInstance{nullptr}; // 连接vlc库的全局配置
+    libvlc_media_t *    m_vlc_media{nullptr};   // 文件
+    libvlc_media_t *    media{nullptr}; 
 };
 #endif // MEDIAYPLAYERWIDGET_H

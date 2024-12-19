@@ -168,9 +168,8 @@ void HttpClient::getFileList()
     connect(m_pReply, &QNetworkReply::finished, this, &HttpClient::onRequestFinished);
 }
 
-QUrl HttpClient::getVedioUrl(QString path)
+QString HttpClient::getVedioUrl(QString path)
 {
-    QUrl url(QString("http://%1:%2%3").arg(m_ip).arg(m_port).arg(path));
-    qDebug() << url;
-    return url;
+	QString resStr = (QString("rtsp://%1/vedio%2").arg(m_ip).arg(path));
+    return resStr;
 }

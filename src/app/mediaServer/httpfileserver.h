@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDir>
+#include <QThread>
 
 class QJsonArray;
 class HttpFileServer : public QTcpServer
@@ -37,5 +38,16 @@ private:
     QString m_directory; // 服务器提供的文件目录
     int     m_port;      // 服务器监听的端口
 };
+
+class HttpThread:public QThread
+{
+	Q_OBJECT
+public:
+	~HttpThread();
+
+protected:
+	void run()override;
+};
+
 
 #endif // HTTPFILESERVER_H

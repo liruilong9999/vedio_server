@@ -7,7 +7,7 @@ get_filename_component(ProjectName ${AbsolutePathProject} NAME)
 # Qt 库
 set(QT_LIBRARY_LIST "Core" "Gui" "Widgets" "Network")
 
-set(SELF_LIBRARY_LIST )
+set(SELF_LIBRARY_LIST "libvlc" "libvlc")
 # 创建项目
-CreateTarget(${ProjectName} "ExeCMD")   
+CreateTarget(${ProjectName} "ExeCMD")     
    

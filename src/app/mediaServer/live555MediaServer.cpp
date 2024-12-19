@@ -2,6 +2,9 @@
 #include "DynamicRTSPServer.hh"
 #include "version.hh"
 #include "httpfileserver.h"
+
+#include <QtConcurrent>
+#include <QCoreApplication>
 /*
 请求方法：
 1.视频(去掉)
@@ -13,10 +16,12 @@ http://127.0.0.1:8080/filelist
 
 int main(int argc, char ** argv)
 {
-    // 创建服务器实例
+	QCoreApplication a(argc,argv);
     HttpFileServer server;
     server.startServer(); // 启动服务器
-
+	QtConcurrent::run([&](){
+	
+	
     // 开始设置我们的使用环境：
     TaskScheduler *    scheduler = BasicTaskScheduler::createNew();              // 创建任务调度器
     UsageEnvironment * env       = BasicUsageEnvironment::createNew(*scheduler); // 创建使用环境
@@ -86,6 +91,8 @@ int main(int argc, char ** argv)
     }
 
     env->taskScheduler().doEventLoop(); // 进入事件循环，服务器开始工作
+    });
 
-    return 0; // 仅为了避免编译器警告，实际代码永远不会到达这里
+
+    return a.exec(); // 仅为了避免编译器警告，实际代码永远不会到达这里
 }

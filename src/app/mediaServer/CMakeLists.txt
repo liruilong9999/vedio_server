@@ -5,9 +5,9 @@ include(${ROOT_DIR}/cmake/module.cmake)
 set(AbsolutePathProject ${CMAKE_CURRENT_SOURCE_DIR})
 get_filename_component(ProjectName ${AbsolutePathProject} NAME)
 
-set(QT_LIBRARY_LIST "Core" "Network")
+set(QT_LIBRARY_LIST "Core" "Network" "Concurrent")
 
-set(SELF_LIBRARY_LIST "BasicUsageEnvironment" "groupsock" "UsageEnvironment" "liveMedia" "qhttpserver")
+set(SELF_LIBRARY_LIST "BasicUsageEnvironment" "groupsock" "UsageEnvironment" "liveMedia" "qhttpserver" )
 
 include_directories(../../lib/BasicUsageEnvironment/include)
 include_directories(../../lib/groupsock/include)
