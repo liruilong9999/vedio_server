@@ -5,9 +5,9 @@ include(${ROOT_DIR}/cmake/module.cmake)
 set(AbsolutePathProject ${CMAKE_CURRENT_SOURCE_DIR})
 get_filename_component(ProjectName ${AbsolutePathProject} NAME)
 
-set(QT_LIBRARY_LIST "Core")
+set(QT_LIBRARY_LIST "Core" "Network")
 
-set(SELF_LIBRARY_LIST "BasicUsageEnvironment" "groupsock" "UsageEnvironment" "liveMedia")
+set(SELF_LIBRARY_LIST "BasicUsageEnvironment" "groupsock" "UsageEnvironment" "liveMedia" "qhttpserver")
 
 include_directories(../../lib/BasicUsageEnvironment/include)
 include_directories(../../lib/groupsock/include)
@@ -17,5 +17,5 @@ include_directories(../../lib/UsageEnvironment/include)
 set(OTHER_LIBRARY_LIST "Ws2_32")
 
 # 创建项目 
-CreateTarget(${ProjectName} "ExeCMD") 
+CreateTarget(${ProjectName} "ExeCMD")  
  
